@@ -50,6 +50,7 @@
     "firebase-admin": "^8.6.1",
     "formidable": "^1.2.1",
     "froala-editor": "^3.1.1-2",
+    "heroku": "^7.63.4",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.19.1",
     "local-storage": "^2.0.0",
