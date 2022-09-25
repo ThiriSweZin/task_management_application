@@ -1,1 +1,4 @@
-web: npm run build && node ./bin/www
+$ cat Procfile
+web: ./bin/www npm start
+
+

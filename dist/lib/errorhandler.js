@@ -99,7 +99,7 @@ const TEMPLETE = `<!DOCTYPE html>
 <meta charset=utf-8>
 <meta content='IE=edge' http-equiv=X-UA-Compatible>
 <meta content='width=device-width,initial-scale=1' name='viewport'>
-<link rel='icon' type='image/png' href='./icon/jmahar_bar.png'>
+<link rel='icon' type='image/png' href='./icon/tasks.png'>
 <title><%= title %></title>
 <style type=\"text/css\">
 body { padding-top: 50px; font: 14px \"Lucida Grande\", Helvetica, Arial, sans-serif; margin: 0; }
