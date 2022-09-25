@@ -8,8 +8,8 @@
     "dev": "nodemon --ext ts --watch src --exec './node_modules/.bin/ts-node' src/bin/www.ts",
     "build": "node ./bin/build",
     "pretest": "npm run build",
-    "test": "./node_modules/.bin/mocha --exit",
-    "js-test": "./node_modules/.bin/mocha --exit"
+    "test": "mocha --exit",
+    "js-test": "mocha --exit"
   },
   "keywords": [
     "typescript",
@@ -72,5 +72,13 @@
     "ts-xlsx": "0.0.11",
     "uuid": "^3.3.2",
     "xlsx": "^0.16.7"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThiriSweZin/task_management_application.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ThiriSweZin/task_management_application/issues"
+  },
+  "homepage": "https://github.com/ThiriSweZin/task_management_application#readme"
 }
