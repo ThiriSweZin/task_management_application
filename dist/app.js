@@ -17,13 +17,9 @@ const v4_1 = __importDefault(require("uuid/v4"));
 const express_application_1 = require("./lib/express-application");
 const passport = __importStar(require("./config/passport-config"));
 const RestApi = __importStar(require("./lib/restapi"));
-const schedule = __importStar(require("node-schedule"));
-// import * as schedule from "node-schedule";
 const config_json_1 = __importDefault(require("../data/config.json"));
 const filerouter = __importStar(require("./routes/file"));
-// import { Auth } from "./lib/auth";
 const jwt_1 = require("./lib/jwt");
-const customerview_1 = require("./models/customerview");
 class MainApp extends express_application_1.ExpressApplication {
     constructor() {
         super(__dirname);
@@ -54,26 +50,13 @@ class MainApp extends express_application_1.ExpressApplication {
         config_json_1.default.restapi.modelBasePath = path.join(__dirname, "models");
         this.use("/api", RestApi.init(config_json_1.default.restapi, (err, api) => {
             if (api) {
-                api.applyModel("notificationview", "regionview", "feedbackview", "cargateview", "bankview", "authview", "adsview", "categoryview", "productview", "subcategoryview", "customerview", "orderview", "dashboardview", "companyview", "forceupdateview", "reportview");
+                api.applyModel("");
             }
         }));
         this.use("/file", filerouter.default.init());
-        var rule = new schedule.RecurrenceRule();
-        rule.dayOfWeek = [0, new schedule.Range(1, 6)];
-        rule.hour = 17;
-        rule.minute = 0;
-        schedule.scheduleJob(rule, this.updateCustomerActive);
-        // schedule.scheduleJob({ second: 10 }, this.updateCustomerActive);
-        // schedule.scheduleJob({ hour: 5, minute: 30 }, this.callsendWarningNoti);
-        // schedule.scheduleJob({ hour: 8, minute: 30 }, this.callsendCancelNoti);
     }
     onUseRouter(app) {
         this.loadRouters("./routes/pages");
-    }
-    updateCustomerActive() {
-        console.log("updated customer status active ");
-        const customerview = new customerview_1.CustomerView();
-        customerview.updateCustomerActive();
     }
 }
 const app = new MainApp();
