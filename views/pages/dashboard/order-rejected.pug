@@ -1,0 +1,219 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item.active
+      span Order Rejected
+  h1.page-header Order Rejected
+  include ../../includes/delete-confirm
+
+  form.form-horizontal#entryForm(method='post', action=`${postUrl}`, enctype="application/x-www-form-urlencoded", autocomplete='off')
+    div.form-group.row
+      label.col-sm-2.control-label(for='startdate') Start Date
+      div.col-sm-4
+        input.form-control.fromdate#start(type='text', name='start', required)
+        input#startdate(type="hidden", name="startdate", value="startdate")
+      label.col-sm-2.control-label(for='enddate') End Date
+      div.col-sm-4
+        input.form-control.todate#end(type='text', name='end', required)
+        input#enddate(type="hidden", name="enddate", value="enddate")
+
+    div.form-group.row
+      label.col-sm-2.control-label(for='ordercode') Order No.
+      div.col-sm-4
+        select.form-control.mm.selectpicker#ordercode(name='ordercode')
+          option(value="") [Select one]
+      label.col-sm-2.control-label(for='customerid') Customer
+      div.col-sm-4
+        select.form-control.mm.selectpicker#customerid(name='customerid')
+          option(value="") [Select one]
+
+    div.row.justify-content-center.form-actions
+      button.btn.btn-primary#loadBtn(type='button', role='button') Load 
+
+  div.table-responsive
+    table#list.table.table-striped
+      thead
+        tr
+          th #
+          th Date
+          th Order No.
+          th Customer
+          th Phone
+          th Net Amount
+          th Status
+          th(id="action") Action
+      tbody
+  script.
+    $(document).ready(function() {
+      var token = "!{token}";
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-order-rejected').addClass('active');
+      $('div#order_subitems').addClass('show');
+      var access = ("#{permission.access}").split(",");
+      if (access[1] != "1") $("#action").hide();
+
+      $.fn.dataTable.ext.errMode = 'none';
+      var loadBtnBtn = document.getElementById("loadBtn");
+      loadBtnBtn.setAttribute("disabled", "");
+
+      $("#end").change(function(){
+        let customerID = "";
+        var date = $('#start').val();
+        var enddate = $('#end').val();
+        loadBtnBtn.removeAttribute("disabled");
+        console.log("enddate ", enddate);
+        $('#customerid').empty();
+        $('#customerid').append(`<option value="">[Select one]</option>`);
+        $('#ordercode').empty();
+        $('#ordercode').append(`<option value="">[Select one]</option>`);
+        
+        $('#customerid').Template({
+          "template": "<option value='${=id}'>${=name}</option>",
+          "ajax": {
+            "url": "/api/orderview/getOrderCustomerByDate?status=rejected&startdate="+date+"&enddate="+enddate,
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "data"
+          }
+        }).on('completed', function() {
+          customerID = $('#customerid option:selected').val();
+          console.log("customerID ", customerID);
+          if (customerID) {
+            $('#customerid').selectpicker('val', customerID);
+          }
+          $('#customerid').selectpicker('refresh');
+        });
+
+        $('#ordercode').Template({
+          "template": "<option value='${=ordercode}'>${=ordercode}</option>",
+          "ajax": {
+            "url": "api/orderview/getOrderCode?status=rejected&startdate="+date+"&enddate="+enddate+"&customerid="+customerID,
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "data"
+          }
+        }).on('completed', function() {
+          var selectedVal = $('#ordercode').data('value');
+          if (selectedVal) {
+            $('#ordercode').selectpicker('val', selectedVal);
+          }
+          $('#ordercode').selectpicker('refresh');
+        });
+      });
+
+      $("#customerid").Template({
+        "template": "<option value='${=id}'>${=name}</option>",
+        "ajax": {
+          url: "/api/orderview/getOrderCustomer?status=rejected",
+          "headers": { "authorization": "Bearer " + token },
+          "dataSrc": "data"
+        }
+      }).on('completed', function() {
+        var selectedVal = $('#customerid').data('value');
+        if (selectedVal) {
+          $("#customerid").selectpicker('val', selectedVal);
+        }
+        $('#customerid').selectpicker('refresh');
+      });
+
+      $("#customerid").change(function(){
+        let date_ordercode;
+        let enddate_ordercode;
+        if($('#start').val() && $$('#end').val()){
+          date_ordercode = $('#start').val();
+          enddate_ordercode = $('#end').val();
+        } else {
+          date_ordercode = "";
+          enddate_ordercode = "";
+        }
+        var selected = $('#customerid option:selected').val();
+        console.log("selected ", selected);
+        $('#ordercode').empty();
+        $('#ordercode').append(`<option value="">[Select one]</option>`);
+        $('#ordercode').Template({
+          "template": "<option value='${=ordercode}'>${=ordercode}</option>",
+          "ajax": {
+            "url": "api/orderview/getOrderCodebyCustomerId?status=rejected&startdate="+date_ordercode+"&enddate="+enddate_ordercode+"&customerid="+selected,
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "data"
+          }
+        }).on('completed', function() {
+          var selectedVal = $('#ordercode').data('value');
+          if (selectedVal) {
+            $('#ordercode').selectpicker('val', selectedVal);
+          }
+          $('#ordercode').selectpicker('refresh');
+        });
+      });
+
+      $("#ordercode").Template({
+        "template": "<option value='${=ordercode}'>${=ordercode}</option>",
+        "ajax": {
+          url: "/api/order?filter=status,eq,rejected",
+          "headers": { "authorization": "Bearer " + token },
+          "dataSrc": "order"
+        }
+      }).on('completed', function() {
+        var selectedVal = $('#ordercode').data('value');
+        if (selectedVal) {
+          $("#ordercode").selectpicker('val', selectedVal);
+        }
+        $('#ordercode').selectpicker('refresh');
+      });
+
+      let data = {
+        startdate: "",
+        enddate: "",
+        customerid: "",
+        ordercode: ""
+      };
+      reload(data);
+
+      $("#loadBtn").on('click', function(event){
+        data = {
+          startdate: $("#start").val(),
+          enddate: $("#end").val(),
+          customerid: $("#customerid").val(),
+          ordercode: $("#ordercode").val()
+        };
+        console.log("data ", data);
+        reload(data);
+      });
+
+      function reload(data){
+        var table = $('table#list').on('error.dt', function(e, settings, techNote, message) {
+          alert('Read data error!');
+        }).DataTable({
+          destroy: true,
+          "autoWidth": true,
+          "fixedHeader" : {
+            "headerOffset": 50,
+            "header": true
+          },
+          "ajax": { 
+            "url": "/api/orderview/getOrderList?status=rejected&startdate="+data.startdate+"&enddate="+data.enddate+"&customerid="+data.customerid+"&ordercode="+data.ordercode,
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "data"
+            
+          },
+          "columns": [
+              { "data": "id" },
+              { "data": "date" },
+              { "data": "ordercode" },
+              { "data": "name", "className": "mm" },
+              { "data": "phone" },
+              { "data": "netamount" },
+              { "data": "status" },
+              { "data": "actions", "className": "nowrap" }
+          ],
+          "columnDefs": [
+            { targets: 0, render: dataTableIndexRenderer() },
+            { targets: 1, render: dataTableDateRenderer() },
+            { targets: 5, render: dataTableNetAmountWithCommas() },
+            { targets: 6, render: dataTableStatusRenderer() },
+            { targets: 7, orderable: false, render: dataTableDetailActionsRenderer("./order-rejected/details", "#{permission.access}") }
+          ]
+        });
+      }
+    });

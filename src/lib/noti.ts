@@ -1,0 +1,5 @@
+/**
+ * Noti
+ */
+
+export class Noti {}

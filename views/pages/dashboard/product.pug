@@ -1,0 +1,334 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item.active
+      span Product
+  h1.page-header Product
+  include ../../includes/delete-confirm
+  include ../../includes/updateprice-comfirm
+  div.alert.alert-dismissible#alert(role='alert')
+    strong.alert-title#alertTitle
+    span#alertMessage
+    button.close(type='button', data-hide='alert', aria-label='Close')
+      span(aria-hidden='true') &times;
+  div.progress.mb-1#progress
+    div.progress-bar.progress-bar-striped.progress-bar-animated(role='progressbar', aria-valuenow='100', aria-valuemin="0", aria-valuemax="100", style="width: 100%")
+
+  div.form-group.row
+    label.col-sm-2.control-label(for='categoryid') Category
+    div.col-sm-7
+      select.form-control.mm.selectpicker#categoryid(name="categoryid", data-live-search="true")
+        option(value="") [Select one]
+  div.form-group.row
+    label.col-sm-2.control-label(for='subcategoryid') Sub Category
+    div.col-sm-7
+      select.form-control.mm.selectpicker#subcategoryid(name="subcategoryid", data-live-search="true")
+        option(value="") [Select one]
+    
+  div.row.justify-content-center.form-actions
+    button.btn.btn-primary#loadBtn(type='button', role='button') Load 
+
+  div.table-responsive
+    table#list.table.table-striped
+      thead
+        tr.immediate
+          th #
+          th Product Code
+          th Product Name
+          th Category
+          th Sub Category
+          th Package Type
+          th Price
+          th View Count
+          th Item Count
+          th.actions
+          th.actions-2
+            a#adder.btn.btn-success.list-action-text(href="./product/entry", role="button", title="Add")
+              i.fa.fa-plus
+      tbody
+
+  div.modal.fade#modalImport(tabindex="-1", role="dialog")
+    div.modal-dialog.modal-sm(role='document', style='max-width:730px')
+      div.modal-content
+        div.modal-header
+          h4.modal-title.mm Import
+          button.close#btnClose(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+        div.modal-body
+          //- form.form-horizontal#entryForm(method='POST', enctype="multipart/form-data", action='/file/productimports/import')
+          form.form-horizontal#entryForm(method='POST', enctype="multipart/form-data", action='/file/upload/import')
+           
+            div.form-group.row
+              div.col-sm-2
+                label.control-label.font(for='excel') File
+              div.col-sm-6
+                input.form-control#excel(type='file', name='file',  accept='.xls,.xlsx,.csv', change="changeEvent($event)", required, autofocus)
+              div.col-sm-1.sample
+                div.sample-btn
+                  a(href=`https://drive.google.com/file/d/19vELS0mBHiZdkAcMPI26fvHrtP5Xde0z/view?usp=sharing`, alt="sample", target=`_blank`, title=`sample`) Sample File
+            div.row.justify-content-md-center.form-actions
+              button.btn.btn-primary#submit(type='submit', data-dismiss="modal" ) Save
+              a.btn.btn-secondary#actionCancel(type='reset', role='button') Cancel
+          form#postSuccessForm(method='GET', action='productimport')
+
+          
+
+  script.
+    $(document).ready(function() {
+      var token = "!{token}";
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-product').addClass('active');
+      $('div#general_subitems').addClass('show');
+      $("#alert").hide();
+      $("#progress").hide();
+      var access = ("#{permission.access}").split(",");
+      if (access[1] != "1") $("#adder").hide();
+
+      var submitBtn = document.getElementById("submit");
+      submitBtn.setAttribute("disabled", "");
+      $.fn.dataTable.ext.errMode = 'none';
+
+      $("#categoryid").Template({
+        "template": "<option value='${=id}'>${=category}</option>",
+        "ajax": {
+          url: "/api/category?order=category+0,asc",
+          "headers": { "authorization": "Bearer " + token },
+          "dataSrc": "category"
+        }
+      }).on('completed', function() {
+        var selectedVal = $('#categoryid').data('value');
+        if (selectedVal) {
+          $("#categoryid").selectpicker('val', selectedVal);
+        }
+        $('#categoryid').selectpicker('refresh');
+      });
+
+      $('#subcategoryid').Template({
+        "template": "<option value='${=id}'>${=sub_category}</option>",
+        "ajax": {
+          "url": "/api/sub_category",
+          "headers": {"authorization": "Bearer " + token},
+          "dataSrc": "sub_category"
+        }
+      }).on('completed', function() {
+        var selectedVal = $('#subcategoryid').data('value');
+        if (selectedVal) {
+          $('#subcategoryid').selectpicker('val', selectedVal);
+        }
+        $('#subcategoryid').selectpicker('refresh');
+      });
+
+      $("#categoryid").change(function(){
+        var selected = $('#categoryid option:selected').val();
+        $('#subcategoryid').empty();
+        $('#subcategoryid').append(`<option value="">[Select one]</option>`);
+        $('#subcategoryid').Template({
+          "template": "<option value='${=id}'>${=sub_category}</option>",
+          "ajax": {
+            "url": "/api/sub_category?filter=categoryid,eq," + selected,
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "sub_category"
+          }
+        }).on('completed', function() {
+          var selectedVal = $('#subcategoryid').data('value');
+          if (selectedVal) {
+            $('#subcategoryid').selectpicker('val', selectedVal);
+          }
+          $('#subcategoryid').selectpicker('refresh');
+        });
+      });
+
+      let data = {
+        category: "",
+        subcategory: ""
+      };
+      reload(data);
+
+      $("#loadBtn").on('click', function(event){
+        data = {
+          category: $("#categoryid").val(),
+          subcategory: $("#subcategoryid").val()
+        };
+        reload(data);
+      });
+
+      function reload(data){
+        var table = $('table#list').DataTable({
+          autoWidth: true,
+          destroy: true,
+          ajax: { 
+            "url": "/api/productview/getProductListbyid?categoryid="+data.category+"&subcategoryid="+data.subcategory,
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "data"
+            //- "dataSrc": function ( json ) {
+            //-   console.table("product data >> ",json);
+            //-   return json;
+            //- }
+          },
+          columns: [
+              { "data": "id"},
+              { "data": "productcode"},
+              { "data": "productname", "className": "mm" },
+              { "data": "category","className": "mm"},
+              { "data": "sub_category", "className": "mm" },
+              { "data": "ifpackage"},
+              { "data": "price"
+                //- render: function (data, row, row) {
+                //- //- console.log("data", data);
+                //- //- console.log("row", row);
+                //- return '<input class="form-control trackInput" style="border:0; background:transparent;width:100px;" id="price" name="price" type="text"  value = ' + row.price + '  >';
+                //- } 
+              },
+              { "data": "viewcount"},
+              { "data": "itemcount"},
+              { "data": "actions", "className": "nowrap"},
+              { "data": "actions", "className": "nowrap"}
+          ],
+          columnDefs: [
+            { targets: 0, render: dataTableIndexRenderer() },
+            { targets: 6, render: dataTablePriceWithCommas() },
+            { targets: 8, "visible": false },
+            { targets: 9, orderable: false, render: dataTableActionsPriceRenderer("","#{permission.access}") },
+            { targets: 10, orderable: false, render: dataTableActionsRenderer("./product/edit", "#{permission.access}") }
+          ],
+          lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+          dom: "<'row'<'col-sm-12 col-md-12 mb-1'B>>" +
+                "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+          order: [ 1, 'asc' ],
+          select: {
+            style: 'os',
+            selector: 'td:first-child'
+          },
+          buttons: [
+            {
+              text: 'Import',
+              charset: 'utf-8',
+              className: 'success-import',
+              action: function ( e, dt, node, config ) {
+                $('#modalImport').modal('show');
+              }  
+            },
+            {
+              extend: 'excelHtml5',
+              text: 'Export',
+              charset: 'utf-8',
+              className: 'success-excel',
+              filename: 'J Mahar Export Products List',
+              title: 'J Mahar Export Products List',
+              exportOptions: {
+                columns: [ 0, 1, 2, 3, 4, 5, 6,8 ]
+              }, 
+            },
+            
+          ]
+        });
+        return table;
+      }
+
+      $("#submit").on("click", function(ev) {
+        if($('#excel').val() != "")
+          $("#progress").show();
+          setTimeout(function(){});
+        $("#upload:hidden").on('change', function(){
+          $('#entryForm').submit();
+        });
+        $('#modalImport').modal('toggle');
+      });
+
+      $("#excel").on('change', function (event) {
+        if($('#excel').val() != "")
+          submitBtn.removeAttribute("disabled");
+      });
+
+      $("#actionCancel").on('click', function(ev) {
+        $('#excel').val("");
+        submitBtn.setAttribute("disabled", "");
+        
+      });
+
+      $('#entryForm').ajaxForm({
+        success: function(data) {
+          console.log(" result ", data);
+          if (data.message == "success") {
+            $.ajax({
+
+                url : '/productimport',
+                type : 'POST',
+                data : {
+                    data
+                },
+                beforeSend: function(data) {
+                  $("#progress").show();
+                },
+                // hides the loader after completion of request, whether successfull or failor.             
+                complete: function(data) {
+                  $("#progress").hide();
+                },
+                success : function(data) {
+                  alert('DATA IMPORT: '+JSON.stringify(data));
+                    window.setTimeout(function(){
+                        }, 2 * 1000);
+                },
+                error : function(request,error)
+                {
+                  alert("Request: "+JSON.stringify(request));
+                    window.setTimeout(function(){
+                        }, 2 * 1000);
+                }
+            });
+            
+            //- table.ajax.reload(data);
+            $("#alertTitle").html("Please Wait, Importing");
+            $("#alertMessage").html(".......");
+            $("#alert").addClass("alert-success").show();
+            $("#progress").hide();
+            $('#excel').val("");
+            submitBtn.setAttribute("disabled", "");
+            location.reload(true);
+            reload(data);
+           
+
+            var postFrm = $('#postSuccessForm');
+            var params = $.url(postFrm.attr('action')).param();
+            if (!params) {
+              for(var key in params) {
+                postFrm.append($('<input type="hidden" name="'+key+'" value="'+ params[key] +'" />'));
+              }
+            }
+            window.setTimeout(function(){
+                //- postFrm.submit();
+            }, 2 * 1000);
+
+          } else {
+            $("#alertTitle").html("Error");
+            $("#alertMessage").html(" Importing Error! ");
+            $("#alert").addClass("alert-danger").show();
+          }
+        }
+      });
+
+      $('#dialogDeleteConfirm').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        $(this).attr('data-id', id);
+        $(this).find('#dialogAccept').on('click', function(ev) {
+          var deleteUrl = '/product/delete/' + id;
+          doDelete(deleteUrl, token, function() {
+            reload(data);
+            //- table.ajax.reload(data);
+            $("#alertTitle").hide();
+            $("#alertMessage").hide();
+            $(this).find('#alertDeleteSuccess').hide();
+          });
+        });
+      }).on('hide.bs.modal', function (event) {
+        $(this).attr('data-id', '');
+        $(this).find('#dialogAccept').off('click');
+      });
+
+    });

@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+const fs = require("fs");
+const archiver = require("archiver");
+const path = require("path");
+
+const zipFileName = "release.zip";
+
+function zipFolder(callback) {
+  // folder double check
+  const srcFolder = path.resolve(__dirname, "../");
+  const zipFilePath = path.resolve(__dirname, `../${zipFileName}`);
+
+  fs.access(srcFolder, fs.constants.F_OK, (notExistingError) => {
+    if (notExistingError) {
+      return callback(notExistingError);
+    }
+    fs.access(path.dirname(zipFilePath), fs.constants.F_OK, (notExistingError) => {
+      if (notExistingError) {
+        return callback(notExistingError);
+      }
+
+      try {
+        fs.unlinkSync(zipFilePath);
+      } catch (e) {}
+
+      const output = fs.createWriteStream(zipFilePath);
+      const zipArchive = archiver("zip");
+
+      zipArchive.glob("**/*", {
+        cwd: srcFolder,
+        ignore: ["dist/**", "node_modules/**", `${zipFileName}`]
+      });
+
+      output.on("close", function() {
+        callback();
+      });
+
+      zipArchive.pipe(output);
+      // zipArchive.directory(srcFolder, false);
+      zipArchive.finalize();
+    });
+  });
+}
+
+zipFolder(function(err) {
+  if (err) {
+    console.log("Something went wrong!", err);
+  } else {
+    console.log(`'${zipFileName}' file created.`);
+  }
+});

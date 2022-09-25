@@ -1,0 +1,89 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item
+      a(href="/customer_favorite") Customer Feedback
+    li.breadcrumb-item.active
+      span Edit
+  h1.page-header Customer Feedback
+  div.row.from-wrapper
+    div.alert.alert-dismissible#alert(role='alert')
+      strong.alert-title#alertTitle
+      span#alertMessage
+      button.close(type='button', data-hide='alert', aria-label='Close')
+        span(aria-hidden='true') &times;
+
+    form.form-horizontal#entryForm(method='GET', action="/feedback/detail")
+      input#recordid(type='hidden', name='id', value=params.id)
+      input#createddate(type='hidden', name='createddate', value=params.createddate)
+
+      div.form-group.row
+        label.col-sm-2.control-label(for='type') Customer Name
+        div.col-sm-10
+          input.form-control.mm#name(type='text', name='name', value=params.name, readonly)
+
+      div.form-group.row
+        label.col-sm-2.control-label(for='type') Customer Phone
+        div.col-sm-10
+          input.form-control.mm#phone(type='text', name='phone', value=params.phone, readonly)
+
+      div.form-group.row
+        label.col-sm-2.control-label(for='date') Date
+        div.col-sm-10
+          input.form-control.mm#createddate(type='text', name='type', value=params.createddate, readonly)
+
+      div.form-group.row
+        label.col-sm-2.control-label(for='type') Type
+        div.col-sm-10
+          input.form-control.mm#type(type='text', name='type', value=params.type, readonly)
+
+      div.form-group.row
+        label.col-sm-2.control-label(for='content') Content
+        div.col-sm-10
+          textarea.form-control.mm.info#description(name='description', readonly)= params.content  
+
+      div.row.justify-content-center.form-actions
+        a.btn.btn-secondary#actionCancel(href=listUrl, role='button') Back
+
+    form#postSuccessForm(method='GET', action=listUrl)
+  script.
+    $(document).ready(function() {
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-feedback').addClass('active');
+      $('div#customer_subitems').addClass('show');
+
+      $("#alert").hide();
+      var token = "!{token}";
+      const product = $("#productname").val();
+      console.log("product >>", product);
+      const date = $("#date").val();
+      console.log("date >>", date);
+      $('#entryForm').ajaxForm({
+        success: function(data) {
+          if (data.success) {
+            $("#alertTitle").html("Success");
+            $("#alertMessage").html("Save Success!");
+            $("#alert").addClass("alert-success").show();
+
+            var postFrm = $('#postSuccessForm');
+            var params = $.url(postFrm.attr('action')).param();
+            if (!params) {
+              for(var key in params) {
+                postFrm.append($('<input type="hidden" name="'+key+'" value="'+ params[key] +'" />'));
+              }
+            }
+            window.setTimeout(function(){
+              postFrm.submit();
+            }, 2 * 1000);
+
+          } else {
+            $("#alertTitle").html("Error");
+            $("#alertMessage").html("Error on save!");
+            $("#alert").addClass("alert-danger").show();
+          }
+        }
+      });
+    });

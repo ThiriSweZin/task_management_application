@@ -1,0 +1,43 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item
+      a(href="/feedback") Feedback
+    li.breadcrumb-item
+      span Images
+  h1.page-header Feedback Images
+
+  div.row.from-wrapper
+    form.form-horizontal#entryForm(method='post', action=`${postUrl}`)
+      input#recordid(type='hidden', name='id', value=params.id)
+      //- input#images(type='text', name='images', value=params.images)
+
+      div.form-image-list#imageList
+        each image in (params.images || [])
+          div.form-image.wide
+            span.image-preview-container
+              input#image(name="image", type="hidden", value=image)
+              a(href=`${image}`) 
+                img.form-image-preview(src=`/file/stream?file=${image}`, alt="Image")
+              //- div.image-delete-container
+                a.image-delete(title="Remove")
+                  i.fa.fa-trash
+
+      div.row.justify-content-center.form-actions
+        //- button.btn.btn-primary(type='submit', role='button') Save
+        a.btn.btn-secondary#actionCancel(href=listUrl, role='button') Back
+
+  div.clearfix
+  form#postSuccessForm(method='GET', action=listUrl)
+
+  script.
+    $(document).ready(function() {
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-feedback').addClass('active');
+      $('div#customer_subitems').addClass('show');
+
+    });
+  

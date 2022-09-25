@@ -1,0 +1,110 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item
+      span Usage 
+  h1.page-header Usage 
+  div.row.from-wrapper
+    div.alert.alert-dismissible#alert(role='alert')
+      strong.alert-title#alertTitle
+      span#alertMessage
+      button.close(type='button', data-hide='alert', aria-label='Close')
+        span(aria-hidden='true') &times;
+
+    form.form-template#entryForm(method='post', action=`${postUrl}`, enctype="application/x-www-form-urlencoded")
+      input#recordid(type='hidden', name='id', value=params.id)
+      input#createddate(type='hidden', name='createddate', value=params.createddate)
+
+      div.form-group.row
+        label.col-sm-2.control-label(for='template') Template
+        div.col-sm-10
+          //- div#info_type
+          //- textarea.form-control.mm#info_type(name="info_type") #{params.info_type}
+          div
+            textarea.form-control.mm#template(name="template")=params.template
+
+      div.row.justify-content-center.form-actions
+        button.btn.btn-primary(type='submit', role='button') Save
+        a.btn.btn-secondary#actionCancel(href=listUrl, role='button') Cancel
+
+    form#postSuccessForm(method='GET', action=listUrl)
+
+  //- From Other
+  //- link(rel="stylesheet",type="text/css", href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/3.0.0/css/froala_style.min.css")  
+
+  link(rel="stylesheet",type="text/css", href="https://cdn.jsdelivr.net/npm/froala-editor@3.0.0-beta.1/css/froala_editor.pkgd.min.css")  
+  link(rel='stylesheet', href='/css/fonts.css')
+  script(src="https://cdn.jsdelivr.net/npm/froala-editor@3.0.0-beta.1/js/froala_editor.pkgd.min.js")
+  
+  script.
+    $(document).ready(function() {
+      setTimeout(function() { 
+        $(`[href="https://www.froala.com/wysiwyg-editor?k=u"]`).remove();
+      }, 1000);
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-usage').addClass('active');
+      $('div#info_subitems').addClass('show');
+
+      new FroalaEditor('#template', {
+      // Set the file upload URL.
+        imageUploadURL: '/file/upload/weburl',
+
+        imageUploadParams: {
+          id: 'my_editor'
+        },
+
+        events: {
+          'image.uploaded': function (response) {
+            console.log("image uploaded");
+            console.log("response ", response);
+            // Image was uploaded to the server.
+          },
+          contentChanged: function () {
+            console.log(this);
+            //- $('#preview').html(this.html.get());
+          }
+        },
+
+        fontFamily: {
+          'Myanmar Text,sans-serif': 'Myanmar Text'
+        },
+        fontFamilySelection: true,
+
+        //- iframeDefaultStyle: 'body{font-family:"Myanmar Text"; color:"green";}',
+
+      })
+
+      $("#alert").hide();
+      $('#entryForm').ajaxForm({
+        success: function(data) {
+          if (data.success) {
+            $(window).scrollTop(0);
+            $("#actionSubmit").attr('disabled',true);
+            $("#alertTitle").html("Success");
+            $("#alertMessage").html("Save Success!");
+            $("#alert").removeClass("alert-danger").addClass("alert-success").show();
+
+            var postFrm = $('#postSuccessForm');
+            var params = $.url(postFrm.attr('action')).param();
+            if (!params) {
+              for(var key in params) {
+                postFrm.append($('<input type="hidden" name="'+key+'" value="'+ params[key] +'" />'));
+              }
+            }
+            window.setTimeout(function(){
+              postFrm.submit();
+            }, 2 * 1000);
+
+          } else {
+            $(window).scrollTop(0);
+            $("#alertTitle").html("Error");
+            $("#alertMessage").html("Error on save!");
+            $("#alert").addClass("alert-danger").show();
+          }
+        }
+      });
+    });
+  

@@ -1,0 +1,31 @@
+{
+    "appname": "Task Management",
+    "sessionsecret": "taskmanagement",
+  
+    "restapi": {
+      "client": "mysql",
+      "connection": {
+        "host": "localhost",
+        "user": "root",
+        "password_online": "",
+        "password_local": "",
+        "password": "",
+        "database": "task_management_app"
+      },
+      "pagesize": 20,
+      "allowedMethods": ["GET"]
+    },
+  
+    "jwt": {
+      "secretKey": "Q9SleX7hbbvvN12SUP2fbsKUb_jBl0iVLT6FMAXWchk",
+      "checkUrls": [
+        { "pattern": "^\/api\/.*" }
+      ],
+      "ignoreUrls": [
+        "/api/--help", "/api/--schema"
+      ],
+      "expiresIn": 3600,
+      "credentialsFile": "./data/credentials.json",
+      "defCredentialId": "a241d66d-644e-45bb-9539-514d0c2467ea"
+    }
+  }

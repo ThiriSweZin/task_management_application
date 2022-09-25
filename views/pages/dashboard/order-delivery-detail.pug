@@ -1,0 +1,108 @@
+extends ../../includes/layout-dashboard
+block content
+    ol.breadcrumb
+        li.breadcrumb-item
+            a(href="/dashboard") Home
+        li.breadcrumb-item
+            a(href="/order-delivery") Delivery
+        li.breadcrumb-item.active
+            span Entry
+    h1.page-header Delivery Entry
+    div.row.from-wrapper
+        div.alert.alert-dismissible#alert(role='alert')
+            strong.alert-title#alertTitle
+            span#alertMessage
+            button.close(type='button', data-hide='alert', aria-label='Close', enctype="application/x-www-form-urlencoded")
+                span(aria-hidden='true') &times;
+
+        form.form-horizontal#entryForm(method='post', action=`${postUrl}`)
+            input#deliveryid(type="hidden", name="id", value=params.id)
+            input#customerid(type="hidden", name="id", value=params.customerid)
+            input#createddate(type='hidden', name='createddate', value=params.createddate)
+
+            div.form-group.row
+                label.col-sm-2.control-label(for='deliverycode') Delivery Code
+                div.col-sm-10
+                    input.form-control.mm#deliverycode(type='text', name='deliverycode', value=params.deliverycode, readonly)
+
+            div.form-group.row
+                label.col-sm-2.control-label(for='name') Customer Name
+                div.col-sm-10
+                    input.form-control.mm#name(type='text', name='name', value=params.name, readonly)
+
+            //- div.form-group.row
+                label.col-sm-2.control-label(for='date') Delivery Date
+                div.col-sm-10
+                    input.form-control.mm#date(type='text', name='date', value=params.date, readonly)
+
+            if(params.cargatename && params.cargatename != "")
+                div.form-group.row
+                    label.col-sm-2.control-label(for='cargatename') Car Gate
+                    div.col-sm-10
+                        input.form-control.mm#cargatename(type='text', name='cargatename', value=params.cargatename, readonly)
+
+            div.form-group.row   
+                label.col-sm-2.control-label(for='parcelqty') Parcel Quantity
+                div.col-sm-10
+                    input.form-control#parcelqty(type='number', name='parcelqty', min="1", value=params.parcelqty, maxlength="55", readonly)
+
+            div.table-responsive
+                table#list.table.table-striped
+                    thead
+                        tr
+                            th #
+                            th Order No
+                            th Order Date
+                            th Status
+                            th Phone
+                            th Net Amount
+                            th(id="action") Action
+                    tbody
+            br
+            div.row.justify-content-center.form-actions
+                //- button.btn.btn-primary#btnSave(type='submit', role='button') Save
+                a.btn.btn-secondary#actionCancel(href=listUrl, role='button') Back
+
+        form#postSuccessForm(method='GET', action=listUrl)
+
+    script.
+        $(document).ready(function() {
+            var token = "!{token}";
+            var table;
+            var rows_selected = [];
+            $('div.sidebar-sticky li.nav-item').removeClass('active');
+            $('li#menu-order-delivery').addClass('active');
+            $('div#order_subitems').addClass('show');
+            var access = ("#{permission.access}").split(",");
+            if (access[1] != "1") $("#adder").hide();
+            $("#alert").hide();
+            var customerId = $("#customerid").val();
+            var deliveryId = $("#deliveryid").val();
+                $.fn.dataTable.ext.errMode = 'none';
+                table = $('table#list').on('error.dt', function(e, settings, techNote, message) {
+                    alert('Read data error!');
+                    }).DataTable({
+                        "autoWidth": true,
+                        "ajax": { 
+                            "url": "/api/orderview/deliveredOrders?customerid=" + customerId + "&deliveryid=" + deliveryId,
+                            "headers": {"authorization": "Bearer " + token},
+                            "dataSrc": "data"
+                        },
+                        "columns": [
+                            { "data": "id" },
+                            { "data": "ordercode" },
+                            { "data": "date" },
+                            { "data": "status" },
+                            { "data": "phone" },
+                            { "data": "netamount" },
+                            { "data": "actions", "className": "nowrap" }
+                        ],
+                        "columnDefs": [
+                            { targets: 0, render: dataTableIndexRenderer() },
+                            { targets: 2, render: dataTableDateRenderer() },
+                            { targets: 6, orderable: false, render: dataTableDeliveryActionsRenderer("./item-detail", "#{permission.access}") }
+                        ],
+                        
+                    });
+        });  
+    

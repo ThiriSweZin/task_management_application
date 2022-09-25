@@ -1,0 +1,59 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item.active
+      span Customer Favorite
+  h1.page-header Customer Favorite
+  include ../../includes/delete-confirm
+  div.table-responsive
+    table#list.table.table-striped
+      thead
+        tr
+          th #
+          th Customer Name
+          th Product
+          th Date
+          th(id="action") Action
+      tbody
+  script.
+    $(document).ready(function() {
+      var token = "!{token}";
+      console.log("token ", token);
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-customer_favorite').addClass('active');
+      $('div#customer_subitems').addClass('show');
+      var access = ("#{permission.access}").split(",");
+      if (access[1] != "1") $("#action").hide();
+
+      $.fn.dataTable.ext.errMode = 'none';
+      var table = $('table#list').on('error.dt', function(e, settings, techNote, message) {
+          console.log('DataTables Error: ', message);
+          alert('Read data error!');
+        }).DataTable({
+          "autoWidth": true,
+          "fixedHeader" : {
+            "headerOffset": 50,
+            "header": true
+          },
+          "ajax": { 
+            "url": "/api/customer_favorite?columns=customer_favorite.id,customerid,productid,date,customer.name,product.productname&join=left,customer,customerid,eq,customer.id,&join=left,product,productid,eq,product.id",
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "customer_favorite"
+          },
+          "columns": [
+              { "data": "id" },
+              { "data": "name", "className": "mm" },
+              { "data": "productname", "className": "mm" },
+              { "data": "date" },
+              { "data": "actions", "className": "nowrap" }
+          ],
+          "columnDefs": [
+            { targets: 0, render: dataTableIndexRenderer() },
+            { targets: 3, render: dataTableDateRenderer() },
+            { targets: 4, orderable: false, render: dataTableDetailActionsRenderer("./customer_favorite/detail", "#{permission.access}") }
+          ]
+      });
+    });

@@ -1,0 +1,128 @@
+extends ../../includes/layout-dashboard
+block content
+  h1.page-header Dashboard
+  //- div.row.placeholders
+  //-   div.col-xs-12.col-sm-4.placeholder
+  //-     a.dash-cat(href="./order-new")
+  //-       div.placeholder-box#list
+  //-         //- br
+  //-         //- h1.icon-size
+  //-         //-   i.ordernewlist.fa.fa-shopping-cart
+  //-         //- h4 ORDERS
+  //-         //- span.text-muted
+  //-         //-   i.fa#office-sign
+  //-         //-   | &nbsp; Total
+  //-         //-   span#list
+  //-         //-     strong 0 &nbsp;
+  //-   div.col-xs-12.col-sm-4.placeholder
+  //-     a.dash-cat(href="./order-accepted")
+  //-       div.placeholder-box
+  //-         br
+  //-         h1.icon-size
+  //-           i.fa.fa-money-check
+  //-         h4 ORDERS ACCEPTED
+  //-         span.text-muted
+  //-           i.fa#residence-sign
+  //-           | &nbsp; Total
+  //-           span#accepted
+  //-             strong 0 &nbsp;
+  //-   div.col-xs-12.col-sm-4.placeholder
+  //-     a.dash-cat(href="./feedback")
+  //-       div.placeholder-box#feedback
+  //-         //- br
+  //-         //- h1.icon-size
+  //-         //-   i.dash-feedback.fa.fa-comments
+  //-         //- h4 FEEDBACKS
+  //-         //- span.text-muted       <span class='text-muted'><i class='fa' id='residence-sign'></i>| Total <span>`{feedback}`<strong>0</strong></span> </span>
+  //-         //-   i.fa#residence-sign 
+  //-         //-   | &nbsp; Total
+  //-         //-   span#feedbacks
+  //-         //-     strong 0 &nbsp;
+      
+  //- h2.sub-header Orders
+  //- div.table-responsive
+    table#list.table.table-striped
+      thead
+        tr
+          th #
+          th Date
+          th Order No.
+          th Customer
+          th Phone
+          th Net Amount
+          th Status
+          th(id="action") Action
+      tbody
+
+  //- script.
+    $(document).ready(function(){
+      var token = "!{token}";
+      var access = ("#{permission.access}").split(",");
+      if (access[1] != "1") $("#action").hide();
+      function loadDashboard(){
+        $.ajax({
+        url: "/api/dashboardview/order",
+        headers: {"authorization": "Bearer " + token},
+        success: function(result){
+          data = result.data;
+          var list = 0;
+          var accepted = 0;
+          var feedback = result.feedback[0].count;
+          data.forEach(item => {
+            if (item.status == "new") {
+              list += item.count;
+            } else if(item.status == "accepted") {
+              accepted += item.count;
+            }
+          });
+          
+          if(list > 0)
+            $("#list").html("<br><h1 class='icon-size'><i class='fa fa-shopping-cart dashboard-animation'></i></h1><h4>ORDERS</h4><span class='text-muted'><i class='fa' id='residence-sign'></i> Total <span class='text-primary'><h2><strong>" + list + "</strong></h2></span> </span>");
+          else   
+            $("#list").html("<br><h1 class='icon-size'><i class='fa fa-shopping-cart'></i></h1><h4>ORDERS</h4><span class='text-muted'><i class='fa' id='residence-sign'></i> Total <span class='text-primary'><h2><strong>" + list + "</strong></h2></span> </span>");
+
+          $("#accepted").addClass("text-primary").html("<h2><strong>"+ accepted +"</strong></h2> ");
+      
+          if(feedback > 0)
+            $("#feedback").html("<br><h1 class='icon-size'><i class='fa fa-comments dashboard-animation'></i></h1><h4>FEEDBACKS</h4><span class='text-muted'><i class='fa' id='residence-sign'></i> Total <span class='text-primary'><h2><strong>" + feedback + "</strong></h2></span> </span>");
+          else   
+            $("#feedback").html("<br><h1 class='icon-size'><i class='fa fa-comments'></i></h1><h4>FEEDBACKS</h4><span class='text-muted'><i class='fa' id='residence-sign'></i> Total <span class='text-primary'><h2><strong>" + feedback + "</strong></h2></span> </span>");
+
+          setTimeout(loadDashboard, 5000);
+          }
+        });
+      };
+      loadDashboard();
+      
+      $.fn.dataTable.ext.errMode = 'none';
+      var table = $('table#list').on('error.dt', function(e, settings, techNote, message) {
+          alert('Read data error!');
+        }).DataTable({
+          "autoWidth": true,
+          "fixedHeader" : {
+            "headerOffset": 50
+          },
+          "ajax": { 
+            "url": "/api/order?filter=status,eq,new&columns=order.id,order.phone,customerid,ordercode,date,netamount,status,customer.name&order=date,desc&join=left,customer,customerid,eq,customer.id",
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "order",
+          },
+          "columns": [
+              { "data": "id" },
+              { "data": "date" },
+              { "data": "ordercode" },
+              { "data": "name", "className": "mm" },
+              { "data": "phone" },
+              { "data": "netamount" },
+              { "data": "status" },
+              { "data": "actions", "className": "nowrap" }
+          ],
+          "columnDefs": [
+            { targets: 0, render: dataTableIndexRenderer() },
+            { targets: 1, render: dataTableDateRenderer() },
+            { targets: 5, render: dataTableNetAmountWithCommas() },
+            { targets: 6, render: dataTableStatusRenderer() },
+            { targets: 7, orderable: false, render: dataTableDetailActionsRenderer("./order-new/details", "#{permission.access}") }
+          ]
+      });
+    });

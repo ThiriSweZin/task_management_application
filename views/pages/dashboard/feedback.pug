@@ -1,0 +1,61 @@
+extends ../../includes/layout-dashboard
+
+block content
+  ol.breadcrumb
+    li.breadcrumb-item
+      a(href="/dashboard") Home
+    li.breadcrumb-item.active
+      span Customer Feedback
+  h1.page-header Customer Feedback
+  include ../../includes/delete-confirm
+  div.table-responsive
+    table#list.table.table-striped
+      thead
+        tr
+          th #
+          th Date
+          th Customer Name
+          th Type
+          th Content
+          th(id="action") Action
+      tbody
+  script.
+    $(document).ready(function() {
+      var token = "!{token}";
+      console.log("token ", token);
+      $('div.sidebar-sticky li.nav-item').removeClass('active');
+      $('li#menu-feedback').addClass('active');
+      $('div#customer_subitems').addClass('show');
+      var access = ("#{permission.access}").split(",");
+      if (access[1] != "1") $("#action").hide();
+
+      $.fn.dataTable.ext.errMode = 'none';
+      var table = $('table#list').on('error.dt', function(e, settings, techNote, message) {
+          console.log('DataTables Error: ', message);
+          alert('Read data error!');
+        }).DataTable({
+          "autoWidth": true,
+          "fixedHeader" : {
+            "headerOffset": 50,
+            "header": true
+          },
+          "ajax": { 
+            "url": "/api/customerview/getFeedback",
+            "headers": {"authorization": "Bearer " + token},
+            "dataSrc": "data"
+          },
+          "columns": [
+              { "data": "id" },
+              { "data": "createddate" },
+              { "data": "name", "className": "mm" },
+              { "data": "type", "className": "mm" },
+              { "data": "content", "className": "mm" },
+              { "data": "actions", "className": "nowrap" }
+          ],
+          "columnDefs": [
+            { targets: 0, render: dataTableIndexRenderer() },
+            { targets: 1, render: dataTableDateRenderer() },
+            { targets: 5, orderable: false, render: dataTableFeedbackActionsRenderer("./feedback/detail", "#{permission.access}") }
+          ]
+      });
+    });

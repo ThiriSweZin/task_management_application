@@ -1,0 +1,561 @@
+.mm {
+  font-family: 'Myanmar Text', 'Noto Sans', sans-serif !important;
+}
+
+.en {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+.mm .dropdown-toggle::after {
+  vertical-align: 0em;
+}
+.inactive {
+  color: #EA344F;
+}
+
+.active {
+  color: darkgreen;
+}
+/* print preview */
+.printcontainer {
+  /* A5 dimensions */
+  height: 210mm;
+  width: 148.5mm;
+  padding: 0.5cm 0.5cm 0.5cm 0.5cm;
+  margin: 0;
+}
+/* .printpadding{
+  width: 15.8cm;
+  height: 22cm;
+  padding-top: 0.5cm;
+  padding-left: 0.0cm;
+  padding-bottom: 0.5cm;
+  padding-right: 0.0cm;
+  margin: 1 auto;
+
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.5;
+  background-color: #fff;
+  background-clip: padding-box;
+}
+.print {
+  width: 15.8cm;
+}
+.printtop {
+  margin-top: 1cm;
+} */
+
+.image {
+  width: 28cm;
+  height: 4cm;
+}
+
+@media print {  
+  @page {
+    size: A5; 
+    /* size: 148mm 210mm;  */
+    /* margin: .5in .5in .5in .5in;  */
+    /* size: 8.27in 11.69in;  */
+    /* margin: 1 auto; */
+    /* margin-right: 45mm;  */
+    /* padding: 4px 4px; */
+    padding: 0.5cm 0.5cm 0.5cm 0.5cm;
+    margin: 0;
+
+  }
+}
+
+a.list-action:not([href]):not([tabindex]),
+.list-action,
+.list-action:hover {
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+}
+
+.bubble {
+  position: absolute;
+  top: -5px;
+  left: -10px;
+  background: gray;
+  width: 20px;
+  border-radius: 15px;
+}
+
+.sample-btn {
+  width: 105px;
+  height: 35px;
+  background-color: #ffc107;
+  padding-top: 5px;
+  padding-left: 17px;
+  border-radius: 7px;
+}
+
+.disable-btn {
+  background: #769cc5;
+  border-color: #769cc5;
+}
+
+.sample-btn a:visited a:hover {
+  color: white;
+}
+
+.sample-btn a {
+  text-decoration: none;
+  color: white;
+}
+
+.from-wrapper .alert {
+  width: 100%;
+}
+
+.form-horizontal,
+.dropzone-container {
+  width: 100%;
+  padding: 1.5em;
+  max-width: 900px;
+}
+
+.form-detail {
+  width: 100%;
+  padding: 1.5em;
+}
+
+.form-actions>.btn:not(:last-child) {
+  margin-right: .25rem;
+}
+
+.alert .alert-title {
+  margin-right: 8px;
+}
+
+.table td.number {
+  text-align: right;
+}
+
+.font {
+  font-size: 13pt;
+  font-weight: 500;
+}
+
+.fontheader {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.textheader {
+  text-align: center;
+}
+
+.fontalign {
+  font-size: 13pt;
+  font-weight: 500;
+  text-align: right;
+}
+
+.title {
+  font-size: 26pt;
+  font-weight: 1000;
+}
+
+.table th,
+.table .label,
+.input-group-addon,
+*[lang='en'] {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+/**
+ * Image Upload
+ */
+
+.upload-drop-zone {
+  width: 100%;
+  min-height: 200px;
+  margin-bottom: 20px;
+  color: #ccc;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: #ccc;
+  line-height: 100px;
+  text-align: center
+}
+
+.upload-drop-zone.drop {
+  color: #222;
+  border-color: #222;
+}
+
+.form-checkbox {
+  display: block;
+  width: 10%;
+  height: 1.5em;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.form-image-list {
+  display: inline-block;
+  min-height: 150px;
+  width: 100%;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  padding-top: 8px;
+  border-top: solid 1px #ddd;
+  border-bottom: solid 1px #ddd;
+}
+
+.form-image {
+  display: inline-block;
+  height: 3.7cm;
+  /* border: 1px solid #ccc; */
+  border-radius: 4px;
+  /* margin-right: 8px; */
+}
+
+.form-image.wide {
+  width: 270px;
+}
+
+.img-responsive-preview {
+  width: 100px;
+  height: 100px;
+}
+
+.img-responsive {
+  width: 190px;
+  height: 3.7cm;
+  margin-bottom: 20px;
+}
+
+.form-image-list .image-add-continer,
+.form-image-list .image-preview-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 4px 4px;
+  overflow: hidden;
+}
+
+.image-add-continer .image-add {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0px 60px;
+  font-size: 18pt;
+  line-height: 142px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.image-preview-container {
+  height: 142px;
+}
+
+.image-preview-container .form-image-preview {
+  /* width: 100%;
+  height: 100%; */
+  width: 100%;
+  height: 100%;
+  max-height: 200px;
+}
+
+.fb-image {
+  width: 100%;
+  height: 100%;
+  max-height: 200px;
+}
+
+.image-delete-container {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 40px;
+  margin-top: -40px;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-align: right;
+  padding: 7px 6px;
+  border-radius: 0 0 4px 4px;
+}
+
+.image-delete-container a {
+  color: #fff !important;
+  font-size: 14pt;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.bank-slip-image {
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.bank-slip-image-preview {
+  /* width: 100%;
+  height: 100%; */
+  width: 100%;
+  height: 100%;
+  max-height: 200px;
+  max-width: 200px;
+}
+
+.detail-text {
+  font-size: 0.9rem;
+}
+
+.discount-text {
+  width: 50px;
+}
+
+.detail-aval {
+  padding: 0.5rem;
+}
+
+.detail-total {
+  width: 220px;
+}
+
+.detail-img {
+  max-width: 70px;
+}
+
+.badge-new-order {
+  color: #fff;
+  background-color: #929292;
+}
+
+.badge-reply {
+  color: #fff;
+  background-color: #F2CD5D;
+}
+
+.badge-accept {
+  color: #fff;
+  background-color: #555555;
+}
+
+.badge-reject {
+  color: #fff;
+  background-color: #EA344F;
+}
+
+.badge-approved {
+  color: #fff;
+  background-color: #DD44A7;
+}
+
+.badge-delivered {
+  color: #fff;
+  background-color: #1DA0BB;
+}
+
+
+/*
+ * Calander
+ */
+
+.table-hover-cells>tbody>tr>th:hover,
+.table-hover-cells>tbody>tr>td:hover {
+  background-color: #f5f5f5;
+}
+
+.table-hover-cells>tbody>tr>th.active:hover,
+.table-hover-cells>tbody>tr>td.active:hover,
+.table-hover-cells>tbody>tr.active>th:hover,
+.table-hover-cells>tbody>tr.active>td:hover {
+  background-color: #e8e8e8;
+}
+
+.table-hover.table-hover-cells>tbody>tr:hover>th:hover,
+.table-hover.table-hover-cells>tbody>tr:hover>td:hover {
+  background-color: #e8e8e8;
+}
+
+.table-hover.table-hover-cells>tbody>tr.active:hover>th:hover,
+.table-hover.table-hover-cells>tbody>tr.active:hover>td:hover {
+  background-color: #d8d8d8;
+}
+
+.calendar-table {
+  table-layout: fixed;
+  border-bottom: 1px solid #dee2e6;
+  width: 99.96%;
+}
+
+.calendar-table .btn-group .dropdown-toggle {
+  width: 200px;
+}
+
+.calendar-table th,
+.calendar-table thead td {
+  text-align: center;
+}
+
+.calendar-table thead tr th {
+  border-right: 1px solid #dee2e6;
+}
+
+.calendar-table td {
+  height: 78px;
+  width: 14.2857%;
+}
+
+.calendar-table td.current {
+  cursor: pointer;
+}
+
+.calendar-table tbody td {
+  border-right: 1px solid #dee2e6;
+}
+
+.calendar-table thead tr th:first-child,
+.calendar-table tbody td:first-child {
+  border-left: 1px solid #dee2e6;
+}
+
+.calendar-table td.previous,
+.calendar-table td.next {
+  color: #ccc !important;
+}
+
+.calendar-table td.today {
+  font-weight: 700;
+  font-size: 16pt;
+}
+
+.calendar-table td span {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
+
+.calendar-table td.full-moon {
+  background: transparent url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' version='1.1' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='60' cy='60' r='50' stroke='%23dee2e6' fill='rgba%28255, 255, 255, 0.5%29'/%3E%3Ctext x='34' y='64' font-size='16' fill='%23000' font-family='Myanmar Text'%3Eလပြည့်%3C/text%3E%3C/svg%3E") no-repeat 50% 50%;
+}
+
+.calendar-table td.no-moon {
+  background: transparent url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' version='1.1' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='60' cy='60' r='50' stroke='%23dee2e6' fill='rgba%280, 0, 0, 0.5%29'/%3E%3Ctext x='34' y='64' font-size='16' fill='%23fff' font-family='Myanmar Text'%3Eလကွယ်%3C/text%3E%3C/svg%3E") no-repeat 50% 50%;
+}
+
+.calendar-table td.current.full-moon {
+  background: rgba(255, 0, 0, 0.1) url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' version='1.1' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='60' cy='60' r='50' stroke='%23dee2e6' fill='rgba%28255, 255, 255, 0.5%29'/%3E%3Ctext x='34' y='64' font-size='16' fill='%23000' font-family='Myanmar Text'%3Eလပြည့်%3C/text%3E%3C/svg%3E") no-repeat 50% 50%;
+}
+
+.calendar-table td.current.no-moon {
+  background: rgba(255, 0, 0, 0.1) url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' version='1.1' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='60' cy='60' r='50' stroke='%23dee2e6' fill='rgba%280, 0, 0, 0.5%29'/%3E%3Ctext x='34' y='64' font-size='16' fill='%23fff' font-family='Myanmar Text'%3Eလကွယ်%3C/text%3E%3C/svg%3E") no-repeat 50% 50%;
+}
+
+.calendar-table td.current.sabbath {
+  cursor: auto !important;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.calendar-table td.current.offday {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+
+/* 
+  Modal 
+*/
+
+.modal-body .textarea textarea {
+  resize: vertical;
+}
+
+.btnsuccess {
+  height: 45px;
+  width: 95px;
+  font-weight: 700;
+  font-size: 12pt;
+  line-height: 1.5;
+  
+}
+
+.modal-body .btn-group .btn {
+  height: 40px;
+}
+
+.modal-body .btn-group input[type="radio"],
+.modal-body .btn-group input[type="text"] {
+  margin-right: 8px;
+}
+
+.modal-body .btn-group .qty-number {
+  width: 56px;
+}
+
+.field-icon {
+  float: right;
+  margin-left: -25px;
+  margin-top: -25px;
+  position: relative;
+  z-index: 2;
+}
+
+.container{
+  padding-top:50px;
+  margin: auto;
+}
+
+/* 
+  Froala 
+*/
+
+.fr-view>p {
+  display: none !important;
+}
+
+#preview>p {
+  display: none !important;
+}
+
+.second-toolbar {
+  display: none !important;
+}
+
+p > data-f-id {
+  display: none !important;
+}
+
+/* dashboard */
+
+.dashboard-animation { 
+  color: #48f6cb; 
+  animation-name: focus-in-contract;
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-fill-mode: both;
+}
+@keyframes focus-in-contract {
+  0%{
+    transform: scale(0.5);
+  }
+  100%{
+    transform: scale(1);
+  }
+}
+

@@ -1,0 +1,416 @@
+extends ../../includes/layout-dashboard
+block content
+    ol.breadcrumb
+        li.breadcrumb-item
+            a(href="/dashboard") Home
+        li.breadcrumb-item
+            a(href="/order-delivery") Delivery
+        li.breadcrumb-item.active
+            span Entry
+    h1.page-header Delivery Entry
+    div.row.from-wrapper
+        div.alert.alert-dismissible#alert(role='alert')
+            strong.alert-title#alertTitle
+            span#alertMessage
+            button.close(type='button', data-hide='alert', aria-label='Close')
+                span(aria-hidden='true') &times;
+
+        form.form-horizontal#entryForm(method='post', action=`${postUrl}`, autocomplete='off')
+            input#rowid(type="hidden", name="id", value=params.id)
+            input#orders_array(type='hidden', name='orders_array', value=orders_array)
+            input#createddate(type='hidden', name='createddate', value=params.createddate)
+
+            div.form-group.row
+                label.col-sm-2.control-label(for='take_way') Delivery Type
+                div.col-sm-10.radio.radio-toolbar.row
+                    div.col-sm-3.row
+                        div.col-sm-1
+                            input#radioSelf.checkbox(type='radio', name='take_way', value='self', checked)
+                        div.col-sm-3
+                            label(for='radioActive') Self
+                    div.col-sm-5.row
+                        div.col-sm-1
+                            input#radioBus.checkbox(type='radio', name='take_way', value='bus')
+                        div.col-sm-4
+                            label(for='radioInactive') Car Gate
+            
+            div.form-group.row
+                label.col-sm-2.control-label(for='customerid') Customer Name
+                div.col-sm-10
+                    select.form-control.mm.selectpicker#customerid(name='customerid', value=params.customerid, data-value=params.customerid, data-live-search="true", data-size="8", required)
+                        option(value="") [Select one]
+
+            //- div.form-group.row
+                label.col-sm-2.control-label(for='date') Delivery Date
+                div.col-sm-10
+                    input.form-control#date(type='text', name='date', value=params.date, maxlength="15", required)
+
+            div.form-group.row#carGate
+                label.col-sm-2.control-label(for='cargateid') Car Gate
+                div.col-sm-10
+                    select.form-control.mm.selectpicker#cargateid(name='cargateid', value=params.cargateid, data-value=params.cargateid, data-live-search="true", data-size="8")
+                        option(value="") [Select one]
+
+            div.form-group.row   
+                label.col-sm-2.control-label(for='parcelqty') Parcel Quantity
+                div.col-sm-10
+                    input.form-control#parcelqty(type='number', name='parcelqty', min="1", value=params.parcelqty, maxlength="55", required)
+
+            div.table-responsive
+                table#list.table.table-striped
+                    thead
+                        tr
+                            th
+                                input(type="checkbox" name="select_all" value="1" id="id-select-all")
+                            th #
+                            th Order No
+                            th Order Date
+                            th Status
+                            th Delivery Type
+                            th Phone
+                            th Net Amount
+                            th(id="action") Action
+                    tbody
+
+            div.row.justify-content-center.form-actions
+                button.btn.btn-primary#btnSave(type='submit', role='button') Deliver
+                a.btn.btn-secondary#actionCancel(href=listUrl, role='button') Cancel
+
+        form#postSuccessForm(method='GET', action=listUrl)
+
+    script.
+        function updateDataTableSelectAllCtrl(table){
+            var $table             = table.table().node();
+            var $chkbox_all        = $('tbody input[type="checkbox"]', $table);
+            var $chkbox_checked    = $('tbody input[type="checkbox"]:checked', $table);
+            var chkbox_select_all  = $('thead input[name="select_all"]', $table).get(0);
+            if($chkbox_checked.length === 0){
+                chkbox_select_all.checked = false;
+                if('indeterminate' in chkbox_select_all){
+                    chkbox_select_all.indeterminate = false;
+                }
+            } else if ($chkbox_checked.length === $chkbox_all.length){
+                chkbox_select_all.checked = true;
+                if('indeterminate' in chkbox_select_all){
+                    chkbox_select_all.indeterminate = false;
+                }
+            } else {
+                chkbox_select_all.checked = true;
+                if('indeterminate' in chkbox_select_all){
+                    chkbox_select_all.indeterminate = true;
+                }
+            }
+        }
+        $(document).ready(function() {
+            var token = "!{token}";
+            var table;
+            var rows_selected = [];
+            $('div.sidebar-sticky li.nav-item').removeClass('active');
+            $('li#menu-order-delivery').addClass('active');
+            $('div#order_subitems').addClass('show');
+            var access = ("#{permission.access}").split(",");
+            if (access[1] != "1") $("#adder").hide();
+            $("#alert").hide();
+            btnSave.setAttribute("disabled", "");
+
+            // Take Way radio button 
+            var take_way = 'self';
+            
+            
+            $('#customerid').Template({
+                "template": "<option value='${=id}'>${=name}</option>",
+                "ajax": {
+                "data": {"_csrf": '<%= csrf %>'},
+                "url": "/api/orderview/deliveryCustomer?take_way=" + take_way,
+                "headers": {"authorization": "Bearer " + token},
+                "dataSrc": "data"
+                }
+            }).on('completed', function() {
+                var selectedVal = $('#customerid').data('value');
+                if (selectedVal) {
+                    $("#customerid option[value='" + selectedVal + "']").prop('selected', true);
+                }
+                $('#customerid').selectpicker('refresh');
+            });
+
+            $('#carGate').hide();
+
+            $("input[type='radio']").click(function(){
+                var radioValue = $("input[name='take_way']:checked").val();
+                $('#customerid').empty();
+                
+                if(radioValue === 'self'){
+                    take_way = radioValue;
+                    $('#carGate').hide();
+                    $('#cargateid').empty();
+                    $('#cargateid').append(`<option value="">[Select one]</option>`);
+                    $('#cargateid').selectpicker('refresh');
+                    $("#customerid").append($('<option>', {value:'', text:'[Select one]'}));
+                    $('#customerid').Template({
+                        "template": "<option value='${=id}'>${=name}</option>",
+                        "ajax": {
+                        "url": "/api/orderview/deliveryCustomer?take_way=" + take_way,
+                        "headers": {"authorization": "Bearer " + token},
+                        "dataSrc": "data"
+                        }
+                    }).on('completed', function() {
+                        var selectedVal = $('#customerid').data('value');
+                        if (selectedVal) {
+                            $("#customerid option[value='" + selectedVal + "']").prop('selected', true);
+                        }
+                        $('#customerid').selectpicker('refresh');
+                    });
+                    
+                    rows_selected = [];
+                    $('table').DataTable().clear().draw();
+                    $('table').DataTable().destroy();
+                } else {
+                    take_way = radioValue;
+                    $('#carGate').show();
+                    $("#customerid").append($('<option>', {value:'', text:'[Select one]'}));
+                    $('#cargateid').empty();
+                    $("#cargateid").append($('<option>', {value:'', text:'[Select one]'}));
+                    $('#cargateid').selectpicker('refresh');
+                    $('#customerid').Template({
+                        "template": "<option value='${=id}'>${=name}</option>",
+                        "ajax": {
+                        "url": "/api/orderview/deliveryCustomer?take_way=" + take_way,
+                        "headers": {"authorization": "Bearer " + token},
+                        "dataSrc": "data"
+                        }
+                    }).on('completed', function() {
+                        var selectedVal = $('#customerid').data('value');
+                        if (selectedVal) {
+                            $("#customerid option[value='" + selectedVal + "']").prop('selected', true);
+                        }
+                        $('#customerid').selectpicker('refresh');
+                    });
+                    rows_selected = [];
+                    $('table').DataTable().clear().draw();
+                    $('table').DataTable().destroy();
+                }
+            });
+
+           
+            $("#customerid").change(function(){
+                if(take_way === 'bus'){
+                    var customerId = $('#customerid option:selected').val();
+                    console.log("selected ", customerId);
+                    $('#cargateid').empty();
+                    $('#cargateid').Template({
+                        "template": "<option value='${=id}'>${=cargatename}</option>",
+                        "ajax": {
+                            "url": "/api/orderview/customerCargate?customerid=" + customerId,
+                            "headers": {"authorization": "Bearer " + token}, 
+                            "dataSrc": "car_gate"
+                        }
+                    }).on('completed', function() {
+                        var selectedVal = $('#cargateid').data('value');
+                        if (selectedVal) {
+                            //- $('#cargateid').selectpicker('val', selectedVal);
+                            $("#cargateid option[value='" + selectedVal + "']").prop('selected', true);
+                        }
+                        $('#cargateid').selectpicker('refresh');
+                    });
+                }
+            });
+            
+            //- $("#date").datepicker({
+            //-     format: "dd/mm/yyyy",
+            //-     autoclose: true,
+            //-     todayHighlight: true,
+            //-     orientation: 'bottom'
+            //- });
+
+            let data = {
+                cargateId: "",
+                customerId: "",
+                takeway: ""
+            };
+            reload(data);
+
+            $("#cargateid").change(function(){
+                var cargate = $('#cargateid option:selected').val();
+                var customer = $('#customerid option:selected').val();
+                console.log("selected cargate change: ", cargate + " and customer : ", customer);
+                data = {
+                    cargateId: cargate,
+                    customerId: $("#customerid").val(),
+                    takeway: take_way
+                };
+                reload(data);
+                
+            });
+
+            $("#customerid").change(function(){
+                var customerId = $('#customerid option:selected').val();
+                console.log("selected change customer : ", customerId);
+                var cargateid = $('#cargateid option:selected').val();
+                console.log("selected change cargateid : ", cargateid);
+                //- $('#cargateid').empty();
+                data = {
+                    cargateId: $("#cargateid").val(),
+                    customerId: customerId,
+                    takeway: take_way
+                };
+                reload(data);
+                $('#cargateid').empty();
+                $('#cargateid').append(`<option value="">[Select one]</option>`);
+                $('#cargateid').selectpicker('refresh');
+            });
+
+            function reload(data){
+                console.log("data.customer", data.customerId);
+                console.log("data.cargateId", data.cargateId);
+                console.log("data.takeway", data.takeway);
+                $('table').DataTable().clear().draw();
+                $('table').DataTable().destroy();
+                $.fn.dataTable.ext.errMode = 'none';
+                table = $('table#list').on('error.dt', function(e, settings, techNote, message) {
+                    alert('Read data error!');
+                    }).DataTable({
+                        destroy: true,
+                        "autoWidth": true,
+                        "ajax": { 
+                            "url": "/api/orderview/customerAcceptedOrder?customerid=" + data.customerId + "&take_way=" + data.takeway + "&cargate=" + data.cargateId,
+                            "headers": {"authorization": "Bearer " + token},
+                            "dataSrc": "data"
+                        },
+                        "columns": [
+                            { "data": "" },
+                            { "data": "id" },
+                            { "data": "ordercode" },
+                            { "data": "date" },
+                            { "data": "status" },
+                            { "data": "take_way" },
+                            { "data": "phone" },
+                            { "data": "netamount" },
+                            { "data": "actions", "className": "nowrap" }
+                        ],
+                        "columnDefs": [
+                            {
+                                'targets': 0,
+                                'searchable': false,
+                                'orderable': false,
+                                'className': 'dt-body-center',
+                                'render': function (data, type, full, meta){
+                                    //- return '<input type="checkbox" name="id[]" value="' + $('<div/>').text(data).html() + '">';
+                                    return '<input type="checkbox">';
+                                }
+                            },
+                            { targets: 1, render: dataTableIndexRenderer() },
+                            { targets: 3, render: dataTableDateRenderer() },
+                            { targets: 8, orderable: false, render: dataTableDeliveryDetailActionsRenderer("../order-accepted/details", "#{permission.access}") }
+                        ],
+                        'order': [[1, 'asc']],
+                        'rowCallback': function(row, data, dataIndex){
+                            // Get row ID
+                            var rowId = data[0];
+                            // If row ID is in the list of selected row IDs
+                            if($.inArray(rowId, rows_selected) !== -1){
+                                $(row).find('input[type="checkbox"]').prop('checked', true);
+                                $(row).addClass('selected');
+                            }
+                        }
+                    });
+
+                    // Handle click on checkbox
+                    $('table tbody').on('click', 'input[type="checkbox"]', function(e){
+                        var $row = $(this).closest('tr');
+                        var data = table.row($row).data();
+                        console.log("data ", data);
+                        var rowId = data.id;
+                        console.log("rowID ", rowId);
+                        //- console.log("orderCode ", data.ordercode);
+                        var index = $.inArray(rowId, rows_selected);
+                        if(this.checked && index === -1){
+                            rows_selected.push(rowId);
+                        } else if (!this.checked && index !== -1){
+                            rows_selected.splice(index, 1);
+                        }
+                        console.log("rows_selected", rows_selected);
+                        if(rows_selected.length > 0){
+                            btnSave.removeAttribute("disabled");
+                        } else {
+                            btnSave.setAttribute("disabled", "");
+                        }
+
+                        if(this.checked){
+                            $row.addClass('selected');
+                        } else {
+                            $row.removeClass('selected');
+                        }
+                        updateDataTableSelectAllCtrl(table);
+                        console.log(updateDataTableSelectAllCtrl(table));
+                        e.stopPropagation();
+                    });
+                    // Handle click on table cells with checkboxes
+                    $('table').on('click', 'tbody td, thead th:first-child', function(e){
+                        $(this).parent().find('input[type="checkbox"]').trigger('click');
+                    });
+                    // Handle click on "Select all" control
+                    $('thead input[name="select_all"]', table.table().container()).on('click', function(e){
+                        if(this.checked){
+                            $('table tbody input[type="checkbox"]:not(:checked)').trigger('click');
+                        } else {
+                            $('table tbody input[type="checkbox"]:checked').trigger('click');
+                        }
+                        e.stopPropagation();
+                    });
+                    // Handle table draw event
+                    table.on('draw', function(){
+                        // Update state of "Select all" control
+                        updateDataTableSelectAllCtrl(table);
+                    });
+            }
+
+            // Handle form submission event
+            $('#btnSave').on('click', function(e){
+                var form = this;
+                var data = {};
+                console.log("btnsave");
+                // Iterate over all selected checkboxes
+                //- $.each(rows_selected, function(index, rowId){
+                    // Create a hidden element
+                    console.log("rows_selected", rows_selected);
+                    data.orders = rows_selected;
+                    $('#orders_array').val(JSON.stringify(rows_selected));
+                    console.log("data.orders", data.orders);
+            });
+            
+            $('#entryForm').submit(function(event) {
+                event.preventDefault();
+
+                $.ajax({
+                url: $(this).attr("action"),
+                type: $(this).attr("method"),
+                data: $(this).formSerialize(),
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                processData: false,
+                success: function(data) {
+                    if (data.success) {
+                    $("#alertTitle").html("Success");
+                    $("#alertMessage").html("Save Success!");
+                    $("#alert").addClass("alert-success").show();
+
+                    var postFrm = $('#postSuccessForm');
+                    var params = $.url(postFrm.attr('action')).param();
+                    if (!params) {
+                        for (var key in params) {
+                        postFrm.append($('<input type="hidden" name="' + key + '" value="' + params[key] + '" />'));
+                        }
+                    }
+                    window.setTimeout(function() {
+                        postFrm.submit();
+                    }, 2 * 1000);
+
+                    } else {
+                    $("#alertTitle").html("Error");
+                    $("#alertMessage").html("Error on save!");
+                    $("#alert").addClass("alert-danger").show();
+                    }
+                }
+                });
+            });
+        });  
+    

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Calendar</title>
+
+  <script src="/js/jquery-3.3.1.min.js"></script>
+</head>
+
+<body>
+  <script>
+    $(document).ready(function() {
+      const data = {
+        data: [{
+          bundleid: '47c85a9a-218f-477d-acdc-cd45c6050f02',
+          quantity: 1,
+          type: 0,
+          customerid: 'a9fbe89d-70c4-41a2-ae08-1014630deade'
+        }, {
+          bundleid: '47c85a9a-218f-477d-acdc-cd45c6050f02',
+          quantity: 3,
+          type: 2,
+          customerid: 'a9fbe89d-70c4-41a2-ae08-1014630deade'
+        }]
+      };
+
+      $.ajax({
+        type: "POST",
+        url: "/api/cart/insert",
+        dataType: 'json',
+        data: JSON.stringify(data),
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTJkOWVhMi1mMmE0LTQ2N2QtODA5YS01MTk3MmZlY2U1ZGEiLCJuYW1lIjoiSnNvbiBXZWIgVG9rZW4iLCJpYXQiOjE1NjkyMjI5MzIwMjMsImV4cCI6MTU2OTIyMjkzNTYyM30.eDViSaSsub-0pyzQUn-rKYKTZ-jVq2On3DqPDg0z7TM"
+        },
+        contentType: 'application/json',
+        processData: false,
+        success: function(data) {
+          console.log("insert", data);
+          alert("Thanks!" + data.message);
+        },
+        error: function() {
+          app.log("Device control failed");
+        },
+      });
+    });
+  </script>
+</body>
+
+</html>
