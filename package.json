@@ -14,7 +14,9 @@
   "keywords": [
     "typescript",
     "express",
-    "nodejs"
+    "nodejs",
+    "heroku"
+
   ],
   "author": "Soe Minn Minn",
   "license": "ISC",
@@ -72,6 +74,9 @@
     "ts-xlsx": "0.0.11",
     "uuid": "^3.3.2",
     "xlsx": "^0.16.7"
+  },
+  "engines": {
+    "node": "14.x"
   },
   "repository": {
     "type": "git",
